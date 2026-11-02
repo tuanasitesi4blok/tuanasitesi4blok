@@ -1,0 +1,23 @@
+{
+  "block": "D Blok",
+  "number": "14",
+  "resident": "Ali Duyku",
+  "dues": {
+    "2025": 1200
+  },
+  "payments": {
+    "2025": {
+      "01": { "amount": 1541.18, "date": "2025-01-07", "note": "Aidat ve yakıt" },
+      "02": { "amount": 2264.41, "date": "2025-02-08", "note": "Aidat ve yakıt" },
+      "03": { "amount": 2112, "date": "2025-03-04", "note": "Aidat ve yakıt" },
+      "04": { "amount": 1772, "date": "2025-04-04", "note": "Aidat ve yakıt" },
+      "05": { "amount": 1500, "date": "2025-05-05", "note": "Aidat ve yakıt" },
+      "06": { "amount": 750, "date": "2025-06-18" },
+      "07": { "amount": 750, "date": "2025-07-14" },
+      "09": { "amount": 1500, "date": "2025-09-17", "note": "Ağustos ve Eylül aidatı" },
+      "10": { "amount": 1200, "date": "2025-10-14" },
+      "11": { "amount": 1200, "date": "2025-11-13" },
+      "12": { "amount": 1200, "date": "2025-12-05" }
+    }
+  }
+}

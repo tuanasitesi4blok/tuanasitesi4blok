@@ -146,9 +146,64 @@
       th { padding: 10px 12px; }
       .table-foot { padding: 11px 13px; }
     }
+    .legacy-app { display: none !important; }
+    .unit-app { min-height: 100vh; }
+    .unit-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 20px clamp(16px, 4vw, 52px); color: #eef4ef; background: #203b30; }
+    .unit-brand { font-family: Georgia, serif; font-size: 19px; }
+    .unit-brand small { display: block; margin-top: 4px; color: #b6c8ba; font-family: inherit; font-size: 11px; }
+    .unit-admin-tools { display: flex; align-items: center; gap: 8px; }
+    .unit-admin-tools select { min-width: 130px; min-height: 38px; padding: 8px 10px; border: 1px solid rgba(255,255,255,.25); border-radius: 6px; color: #fff; background: #29483a; }
+    .unit-admin-tools option { color: var(--ink); background: white; }
+    .unit-nav { display: flex; gap: 5px; }
+    .unit-nav button { display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid rgba(255,255,255,.25); border-radius: 6px; color: white; background: transparent; font-size: 17px; }
+    .unit-nav button:hover { background: rgba(255,255,255,.12); }
+    .unit-main { width: min(840px, 100%); margin: 0 auto; padding: 36px 20px 56px; }
+    .unit-main h1 { margin-bottom: 6px; }
+    .unit-subtitle { margin: 0 0 24px; color: var(--muted); }
+    .unit-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .unit-years { min-height: 38px; padding: 8px 11px; border: 1px solid var(--line); border-radius: 6px; background: white; }
+    .unit-share { min-height: 38px; padding: 0 12px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: white; font-weight: 600; }
+    .unit-share:hover { background: var(--canvas); }
+    .unit-card { overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: white; }
+    .unit-person { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; padding: 20px; border-bottom: 1px solid var(--line); }
+    .unit-person label { display: block; margin-bottom: 5px; color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; }
+    .unit-person strong { font-size: 15px; }
+    .unit-months { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .unit-month { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 54px; padding: 10px 20px; border-bottom: 1px solid #edf0ec; }
+    .unit-month:nth-child(odd) { border-right: 1px solid #edf0ec; }
+    .unit-month-name { color: #405149; }
+    .unit-month-amount { font-variant-numeric: tabular-nums; font-weight: 650; }
+    .unit-month-amount.unpaid { color: #9aa59e; font-weight: 400; }
+    .unit-status { padding: 16px 20px; color: var(--muted); font-size: 12px; }
+    .unit-error { padding: 30px 20px; text-align: center; }
+    .unit-error strong { display: block; margin-bottom: 7px; color: var(--ink); }
+    .unit-error p { margin: 0; color: var(--muted); }
+    @media (max-width: 600px) {
+      .unit-header { align-items: flex-start; flex-direction: column; padding: 15px; }
+      .unit-admin-tools { width: 100%; }
+      .unit-admin-tools select { min-width: 0; flex: 1; }
+      .unit-main { padding: 25px 14px 40px; }
+      .unit-person { padding: 16px; }
+      .unit-month { min-height: 50px; padding: 9px 13px; }
+      .unit-status { padding: 13px 16px; }
+    }
   </style>
 </head>
 <body>
+  <div class="unit-app" id="unit-app">
+    <header class="unit-header">
+      <div class="unit-brand">Tuana Sitesi<small>Aidat bilgisi</small></div>
+      <div class="unit-admin-tools" id="admin-tools" hidden>
+        <select id="admin-block" aria-label="Blok seç"></select>
+        <select id="admin-unit" aria-label="Daire seç"></select>
+        <div class="unit-nav"><button id="previous-unit" type="button" title="Önceki daire" aria-label="Önceki daire">‹</button><button id="next-unit" type="button" title="Sonraki daire" aria-label="Sonraki daire">›</button></div>
+      </div>
+    </header>
+    <main class="unit-main">
+      <div id="unit-content" aria-live="polite"><div class="empty">Daire bilgisi yükleniyor…</div></div>
+    </main>
+  </div>
+  <div class="legacy-app" aria-hidden="true">
   <div class="shell">
     <aside class="sidebar">
       <div class="brand">
@@ -216,7 +271,7 @@
   </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script>
+  <script type="application/json" id="legacy-script">
     (() => {
       const MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
       const STORAGE_KEY = 'tuana-aidat-v1';
@@ -410,6 +465,111 @@
         if (event.target.closest('.modal-close') || event.target.closest('[data-cancel]')) $('#record-dialog').close();
       });
       render();
+    })();
+  </script>
+  </div>
+  <script>
+    (() => {
+      const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+      const adminTools = document.querySelector('#admin-tools');
+      const content = document.querySelector('#unit-content');
+      const blockSelect = document.querySelector('#admin-block');
+      const unitSelect = document.querySelector('#admin-unit');
+      const query = new URLSearchParams(location.search);
+      const token = query.get('unit');
+      const currency = amount => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 2 }).format(amount);
+      let registry = [];
+      let selectedUnit = null;
+      let selectedYear = new Date().getFullYear();
+
+      function showError(message) {
+        content.innerHTML = `<section class="unit-card unit-error"><strong>Daire bilgisi açılamadı</strong><p>${message}</p></section>`;
+      }
+
+      function shareUrl(unit) {
+        const url = new URL(location.href);
+        url.search = '';
+        url.searchParams.set('unit', unit.token);
+        return url.toString();
+      }
+
+      async function showUnit(unit) {
+        selectedUnit = unit;
+        const response = await fetch(`data/units/${encodeURIComponent(unit.token)}.json`, { cache: 'no-store' });
+        if (!response.ok) throw new Error('Bu bağlantı geçersiz veya daire dosyası bulunamadı.');
+        const record = await response.json();
+        const years = Object.keys(record.payments || {}).map(Number).sort((a, b) => b - a);
+        selectedYear = years.includes(selectedYear) ? selectedYear : (years[0] || new Date().getFullYear());
+        const yearOptions = years.map(year => `<option value="${year}" ${year === selectedYear ? 'selected' : ''}>${year}</option>`).join('');
+        const payments = record.payments?.[selectedYear] || {};
+        const names = (record.resident || '').trim().split(/\s+/);
+        const surname = names.length > 1 ? names.pop() : '—';
+        const firstName = names.join(' ') || '—';
+        content.innerHTML = `<div class="eyebrow">${escapeHtml(record.block)} · Daire ${escapeHtml(record.number)}</div><h1>${escapeHtml(record.block)} · Daire ${escapeHtml(record.number)}</h1><p class="unit-subtitle">${selectedYear} yılı ödeme dökümü</p><div class="unit-toolbar"><select class="unit-years" id="unit-year" aria-label="Yıl seç">${yearOptions}</select>${adminTools.hidden ? '' : '<button class="unit-share" id="copy-share" type="button">Bağlantıyı kopyala</button>'}</div><section class="unit-card"><div class="unit-person"><div><label>İsim</label><strong>${escapeHtml(firstName)}</strong></div><div><label>Soyisim</label><strong>${escapeHtml(surname)}</strong></div></div><div class="unit-months">${months.map((month, index) => {
+          const payment = payments[String(index + 1).padStart(2, '0')];
+          const amount = typeof payment === 'number' ? payment : payment?.amount;
+          return `<div class="unit-month"><span class="unit-month-name">${month}</span><span class="unit-month-amount ${amount == null ? 'unpaid' : ''}">${amount == null ? '—' : currency(amount)}</span></div>`;
+        }).join('')}</div><div class="unit-status">Aylık aidat: ${currency(record.dues?.[selectedYear] || 0)}</div></section>`;
+        document.querySelector('#unit-year').addEventListener('change', event => { selectedYear = Number(event.target.value); showUnit(unit).catch(error => showError(error.message)); });
+        document.querySelector('#copy-share')?.addEventListener('click', async () => {
+          try { await navigator.clipboard.writeText(shareUrl(unit)); showToast('Daire bağlantısı kopyalandı.'); }
+          catch { showToast(shareUrl(unit)); }
+        });
+        unitSelect.value = unit.token;
+      }
+
+      function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+      }
+
+      function showToast(message) {
+        let toast = document.querySelector('.toast');
+        if (!toast) { toast = document.createElement('div'); toast.className = 'toast'; document.body.append(toast); }
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => toast.classList.remove('show'), 2600);
+      }
+
+      function updateUnitOptions() {
+        const block = blockSelect.value;
+        const units = registry.filter(unit => unit.block === block);
+        unitSelect.innerHTML = units.map(unit => `<option value="${unit.token}">Daire ${escapeHtml(unit.number)} · ${escapeHtml(unit.resident)}</option>`).join('');
+        if (units.length) showUnit(units.find(unit => unit.token === selectedUnit?.token) || units[0]).catch(error => showError(error.message));
+      }
+
+      async function initAdmin() {
+        adminTools.hidden = false;
+        const response = await fetch('data/admin-index.json', { cache: 'no-store' });
+        if (!response.ok) throw new Error('Yönetici daire listesi yüklenemedi.');
+        const data = await response.json();
+        registry = data.units.sort((a, b) => a.block.localeCompare(b.block, 'tr') || Number(a.number) - Number(b.number));
+        const blocks = [...new Set(registry.map(unit => unit.block))].sort((a, b) => a.localeCompare(b, 'tr'));
+        blockSelect.innerHTML = blocks.map(block => `<option>${escapeHtml(block)}</option>`).join('');
+        blockSelect.addEventListener('change', updateUnitOptions);
+        unitSelect.addEventListener('change', () => {
+          const unit = registry.find(item => item.token === unitSelect.value);
+          if (unit) showUnit(unit).catch(error => showError(error.message));
+        });
+        const move = offset => {
+          const index = registry.findIndex(unit => unit.token === selectedUnit?.token);
+          const next = registry[(index + offset + registry.length) % registry.length];
+          if (!next) return;
+          blockSelect.value = next.block;
+          updateUnitOptions();
+          unitSelect.value = next.token;
+          showUnit(next).catch(error => showError(error.message));
+        };
+        document.querySelector('#previous-unit').addEventListener('click', () => move(-1));
+        document.querySelector('#next-unit').addEventListener('click', () => move(1));
+        updateUnitOptions();
+      }
+
+      if (token) {
+        showUnit({ token }).catch(error => showError(error.message));
+      } else {
+        initAdmin().catch(error => showError(error.message));
+      }
     })();
   </script>
 </body>
