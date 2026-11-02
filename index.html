@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f7f3">
+  <title>Tuana Sitesi | Aidat Yönetimi</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1d2925;
+      --muted: #728078;
+      --line: #e4e9e3;
+      --paper: #ffffff;
+      --canvas: #f5f7f3;
+      --green: #2f6d54;
+      --green-dark: #24543f;
+      --green-soft: #e8f2eb;
+      --orange: #d97745;
+      --orange-soft: #fff0e8;
+      --red: #b94a48;
+      --shadow: 0 12px 32px rgba(34, 54, 43, .08);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--canvas); font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif; font-size: 14px; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
+    .sidebar { display: flex; flex-direction: column; padding: 27px 18px 20px; color: #eef4ef; background: #203b30; }
+    .brand { display: flex; align-items: center; gap: 12px; padding: 0 10px 28px; border-bottom: 1px solid rgba(255,255,255,.13); }
+    .brand-mark { display: grid; width: 39px; height: 39px; place-items: center; border: 1px solid rgba(255,255,255,.28); border-radius: 12px; color: #d5e8d9; font-family: Georgia, serif; font-size: 20px; }
+    .brand-name { font-family: Georgia, serif; font-size: 17px; }
+    .brand-caption { margin-top: 3px; color: #a9beb0; font-size: 11px; }
+    .nav-label { margin: 28px 10px 10px; color: #9eb4a4; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
+    .nav { display: grid; gap: 5px; }
+    .nav button { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border: 0; border-radius: 8px; color: #c6d5ca; background: transparent; text-align: left; }
+    .nav button:hover, .nav button.active { color: #fff; background: rgba(255,255,255,.12); }
+    .nav-icon { display: grid; width: 20px; place-items: center; font-size: 17px; }
+    .sidebar-bottom { margin-top: auto; padding: 17px 11px 0; border-top: 1px solid rgba(255,255,255,.13); color: #a9beb0; font-size: 12px; line-height: 1.7; }
+    .sidebar-bottom strong { display: block; color: #eef4ef; font-weight: 600; }
+    main { min-width: 0; padding: 28px clamp(18px, 4vw, 52px) 48px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 30px; }
+    .eyebrow { margin-bottom: 6px; color: var(--green); font-size: 11px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; }
+    h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(26px, 3vw, 34px); font-weight: 500; letter-spacing: 0; }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .year-select { min-width: 96px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); background: white; }
+    .admin-chip { display: flex; align-items: center; gap: 9px; padding: 7px 11px 7px 7px; border: 1px solid var(--line); border-radius: 8px; background: white; }
+    .admin-avatar { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 7px; color: var(--green-dark); background: var(--green-soft); font-weight: 700; }
+    .admin-chip span:last-child { font-size: 12px; font-weight: 600; }
+    .view { display: none; }
+    .view.active { display: block; animation: appear .2s ease-out; }
+    @keyframes appear { from { opacity: .5; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 22px; }
+    .summary { min-height: 122px; padding: 18px 19px; border: 1px solid var(--line); border-radius: 9px; background: var(--paper); }
+    .summary-top { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 12px; }
+    .summary-icon { color: var(--green); font-size: 16px; }
+    .summary-value { margin-top: 13px; font-family: Georgia, serif; font-size: 29px; line-height: 1; }
+    .summary-note { margin-top: 7px; color: var(--muted); font-size: 11px; }
+    .panel { overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: var(--paper); }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--line); }
+    .panel-title { margin: 0; font-family: Georgia, serif; font-size: 19px; font-weight: 500; }
+    .panel-subtitle { margin-top: 5px; color: var(--muted); font-size: 12px; }
+    .filters { display: flex; align-items: center; gap: 8px; }
+    .field, .select { min-height: 37px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: white; }
+    .field::placeholder { color: #9aa59e; }
+    .search { width: 190px; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 37px; padding: 0 13px; border: 1px solid transparent; border-radius: 6px; font-weight: 600; white-space: nowrap; }
+    .button-primary { color: #fff; background: var(--green); }
+    .button-primary:hover { background: var(--green-dark); }
+    .button-quiet { border-color: var(--line); color: var(--ink); background: white; }
+    .button-quiet:hover { background: var(--canvas); }
+    .button-danger { border-color: #f0d7d4; color: var(--red); background: #fffafa; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; }
+    th { padding: 12px 15px; color: var(--muted); background: #fafbf9; font-size: 10px; font-weight: 700; letter-spacing: .55px; text-transform: uppercase; }
+    td { padding: 13px 15px; border-top: 1px solid #edf0ec; }
+    tbody tr:hover { background: #fcfdfb; }
+    .unit-name { font-weight: 650; }
+    .unit-meta { margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .amount { font-variant-numeric: tabular-nums; }
+    .month-cell { width: 61px; text-align: center; }
+    .month-toggle { display: inline-grid; width: 26px; height: 26px; place-items: center; border: 1px solid #f2d9ce; border-radius: 50%; color: #be704e; background: var(--orange-soft); font-size: 12px; }
+    .month-toggle.paid { border-color: #d4e7d8; color: var(--green); background: var(--green-soft); }
+    .month-toggle:hover { transform: scale(1.07); }
+    .status { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+    .status::before { width: 7px; height: 7px; border-radius: 50%; background: #d7855c; content: ""; }
+    .status.complete { color: var(--green); }
+    .status.complete::before { background: #4a9a69; }
+    .empty { padding: 46px 20px; color: var(--muted); text-align: center; }
+    .empty strong { display: block; margin-bottom: 6px; color: var(--ink); font-family: Georgia, serif; font-size: 18px; font-weight: 500; }
+    .table-foot { display: flex; justify-content: space-between; gap: 12px; padding: 12px 19px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+    .manage-grid { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 18px; align-items: start; }
+    .side-note { padding: 18px; border: 1px solid #dfe9df; border-radius: 8px; background: #edf4ed; }
+    .side-note h3 { margin: 0 0 8px; font-family: Georgia, serif; font-size: 18px; font-weight: 500; }
+    .side-note p { margin: 0; color: #596e60; font-size: 12px; line-height: 1.7; }
+    .record-name { font-weight: 650; }
+    .record-detail { margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .row-actions { display: flex; justify-content: flex-end; gap: 6px; }
+    .icon-button { display: grid; width: 31px; height: 31px; place-items: center; border: 1px solid var(--line); border-radius: 6px; color: #52635a; background: white; }
+    .icon-button:hover { color: var(--green); background: var(--canvas); }
+    .icon-button.delete:hover { border-color: #f0d7d4; color: var(--red); background: #fffafa; }
+    dialog { width: min(440px, calc(100% - 28px)); padding: 0; border: 0; border-radius: 10px; box-shadow: 0 24px 70px rgba(20,35,27,.24); }
+    dialog::backdrop { background: rgba(22, 38, 29, .45); backdrop-filter: blur(2px); }
+    .modal-head { display: flex; align-items: start; justify-content: space-between; padding: 20px 22px 15px; border-bottom: 1px solid var(--line); }
+    .modal-head h2 { margin: 0; font-family: Georgia, serif; font-size: 21px; font-weight: 500; }
+    .modal-head p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+    .modal-close { width: 30px; height: 30px; border: 0; border-radius: 5px; color: var(--muted); background: transparent; font-size: 20px; }
+    .modal-body { display: grid; gap: 14px; padding: 19px 22px 22px; }
+    .form-row { display: grid; gap: 6px; }
+    .form-row label { font-size: 12px; font-weight: 650; }
+    .form-row input, .form-row select { width: 100%; min-height: 40px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 6px; outline: none; }
+    .form-row input:focus, .form-row select:focus { border-color: #77a88a; box-shadow: 0 0 0 3px rgba(80,140,99,.13); }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 4px; }
+    .toast { position: fixed; right: 22px; bottom: 20px; z-index: 4; padding: 12px 16px; border-radius: 7px; color: white; background: #203b30; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transform: translateY(8px); transition: .2s; }
+    .toast.show { opacity: 1; transform: none; }
+    @media (max-width: 980px) {
+      .shell { grid-template-columns: 205px minmax(0,1fr); }
+      .summary-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .manage-grid { grid-template-columns: 1fr; }
+      .side-note { order: -1; }
+    }
+    @media (max-width: 680px) {
+      .shell { display: block; }
+      .sidebar { padding: 12px 14px; }
+      .brand { padding: 0 4px 11px; border-bottom: 0; }
+      .brand-mark { width: 34px; height: 34px; }
+      .nav-label, .sidebar-bottom { display: none; }
+      .nav { display: flex; gap: 5px; overflow-x: auto; padding-top: 8px; }
+      .nav button { min-width: max-content; min-height: 37px; padding: 0 10px; font-size: 12px; }
+      .nav-icon { width: auto; }
+      main { padding: 22px 14px 35px; }
+      .topbar { align-items: flex-start; margin-bottom: 22px; }
+      .top-actions { gap: 6px; }
+      .admin-chip { padding: 5px; }
+      .admin-chip span:last-child { display: none; }
+      .year-select { min-width: 80px; padding: 9px 7px; }
+      .summary-grid { gap: 9px; margin-bottom: 15px; }
+      .summary { min-height: 105px; padding: 14px; }
+      .summary-value { font-size: 25px; }
+      .panel-head { align-items: flex-start; flex-direction: column; padding: 16px; }
+      .filters { width: 100%; }
+      .search { flex: 1; width: 100%; min-width: 0; }
+      .filters .button { padding: 0 10px; }
+      .panel-title { font-size: 18px; }
+      td { padding: 11px 12px; }
+      th { padding: 10px 12px; }
+      .table-foot { padding: 11px 13px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">T</div>
+        <div><div class="brand-name">Tuana Sitesi</div><div class="brand-caption">Aidat yönetim paneli</div></div>
+      </div>
+      <div class="nav-label">Yönetim</div>
+      <nav class="nav" aria-label="Ana menü">
+        <button class="active" data-view="dues"><span class="nav-icon">▦</span>Aidat takibi</button>
+        <button data-view="blocks"><span class="nav-icon">⌂</span>Bloklar</button>
+        <button data-view="apartments"><span class="nav-icon">▤</span>Daireler</button>
+      </nav>
+      <div class="sidebar-bottom"><strong>Site yöneticisi</strong>Yönetim hesabı</div>
+    </aside>
+    <main>
+      <header class="topbar">
+        <div><div class="eyebrow">Yönetim paneli</div><h1 id="page-title">Aidat takibi</h1></div>
+        <div class="top-actions">
+          <select class="year-select" id="year-select" aria-label="Yıl seç"></select>
+          <button class="button button-quiet" id="add-year" title="Yeni yıl ekle">＋ Yıl ekle</button>
+          <div class="admin-chip"><span class="admin-avatar">Y</span><span>Yönetici</span></div>
+        </div>
+      </header>
+
+      <section class="view active" id="view-dues">
+        <div class="summary-grid" id="summary-grid"></div>
+        <section class="panel">
+          <div class="panel-head">
+            <div><h2 class="panel-title">Daire bazında tahsilat</h2><div class="panel-subtitle" id="dues-subtitle">Aylık ödeme durumlarını görüntüleyin ve güncelleyin.</div></div>
+            <div class="filters">
+              <select class="select" id="block-filter" aria-label="Blok filtrele"></select>
+              <input class="field search" id="unit-search" type="search" placeholder="Daire veya sakin ara" aria-label="Daire ara">
+              <button class="button button-primary" id="new-apartment-from-dues">＋ Daire ekle</button>
+            </div>
+          </div>
+          <div class="table-wrap" id="dues-table"></div>
+          <div class="table-foot"><span>Durumu değiştirmek için ay simgesine tıklayın.</span><span id="dues-foot-count"></span></div>
+        </section>
+      </section>
+
+      <section class="view" id="view-blocks">
+        <div class="manage-grid">
+          <section class="panel">
+            <div class="panel-head"><div><h2 class="panel-title">Bloklar</h2><div class="panel-subtitle">Siteye bağlı blokları yönetin.</div></div><button class="button button-primary" id="new-block">＋ Blok ekle</button></div>
+            <div class="table-wrap" id="blocks-table"></div>
+          </section>
+          <aside class="side-note"><h3>Blok düzeni</h3><p>Blok eklediğinizde daireleri ilgili bloğa bağlayabilirsiniz. Bir blok silinmeden önce o bloğa bağlı dairelerin silinmesi veya başka bir bloğa taşınması gerekir.</p></aside>
+        </div>
+      </section>
+
+      <section class="view" id="view-apartments">
+        <section class="panel">
+          <div class="panel-head"><div><h2 class="panel-title">Daireler</h2><div class="panel-subtitle">Daire ve sakin bilgilerini yönetin.</div></div><div class="filters"><input class="field search" id="apartment-search" type="search" placeholder="Daire veya sakin ara" aria-label="Daire ara"><button class="button button-primary" id="new-apartment">＋ Daire ekle</button></div></div>
+          <div class="table-wrap" id="apartments-table"></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="record-dialog">
+    <form id="record-form">
+      <div class="modal-head"><div><h2 id="dialog-title">Yeni kayıt</h2><p id="dialog-subtitle">Bilgileri girerek kaydı oluşturun.</p></div><button class="modal-close" type="button" aria-label="Kapat">×</button></div>
+      <div class="modal-body" id="dialog-fields"></div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      const MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+      const STORAGE_KEY = 'tuana-aidat-v1';
+      const currentYear = new Date().getFullYear();
+      const defaultData = {
+        years: [currentYear],
+        blocks: [{ id: 'block-a', name: 'A Blok' }, { id: 'block-b', name: 'B Blok' }, { id: 'block-c', name: 'C Blok' }, { id: 'block-d', name: 'D Blok' }],
+        apartments: [
+          { id: 'apt-a1', blockId: 'block-a', number: '1', resident: 'Ayşe Yılmaz', dues: 1250 },
+          { id: 'apt-a2', blockId: 'block-a', number: '2', resident: 'Mehmet Demir', dues: 1250 },
+          { id: 'apt-a3', blockId: 'block-a', number: '3', resident: 'Zeynep Kaya', dues: 1250 },
+          { id: 'apt-b1', blockId: 'block-b', number: '1', resident: 'Can Aydın', dues: 1250 },
+          { id: 'apt-b2', blockId: 'block-b', number: '2', resident: 'Elif Şahin', dues: 1250 },
+          { id: 'apt-c1', blockId: 'block-c', number: '1', resident: 'Mert Çelik', dues: 1250 },
+          { id: 'apt-d1', blockId: 'block-d', number: '1', resident: 'Deniz Arslan', dues: 1250 }
+        ],
+        payments: {}
+      };
+      const clone = value => JSON.parse(JSON.stringify(value));
+      let data;
+      try {
+        data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || clone(defaultData);
+      } catch {
+        data = clone(defaultData);
+      }
+      const state = { year: data.years.includes(currentYear) ? currentYear : Math.max(...data.years), view: 'dues', blockFilter: 'all', search: '' };
+      const $ = selector => document.querySelector(selector);
+      const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+      const currency = amount => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(amount || 0);
+      const id = prefix => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+      const blockName = blockId => data.blocks.find(block => block.id === blockId)?.name || 'Blok yok';
+      const paymentKey = (apartmentId, year, month) => `${apartmentId}:${year}:${month}`;
+      const isPaid = (apartmentId, month) => Boolean(data.payments[paymentKey(apartmentId, state.year, month)]);
+      function save() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        render();
+      }
+      function showToast(message) {
+        const toast = $('#toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => toast.classList.remove('show'), 2400);
+      }
+      function renderYears() {
+        const select = $('#year-select');
+        select.innerHTML = [...data.years].sort((a, b) => b - a).map(year => `<option value="${year}" ${year === state.year ? 'selected' : ''}>${year}</option>`).join('');
+      }
+      function renderSummary(apartments) {
+        const total = apartments.length * 12;
+        const paid = apartments.reduce((sum, apartment) => sum + MONTHS.reduce((count, _, month) => count + Number(isPaid(apartment.id, month)), 0), 0);
+        const expected = apartments.reduce((sum, apartment) => sum + Number(apartment.dues || 0) * 12, 0);
+        const collected = apartments.reduce((sum, apartment) => sum + MONTHS.reduce((amount, _, month) => amount + (isPaid(apartment.id, month) ? Number(apartment.dues || 0) : 0), 0), 0);
+        const outstanding = Math.max(0, expected - collected);
+        const cards = [
+          ['Kayıtlı daire', apartments.length, 'Seçili blok ve yıl için', '⌂'],
+          ['Tahsilat oranı', `${total ? Math.round(paid / total * 100) : 0}%`, `${paid} / ${total} aylık ödeme`, '↗'],
+          ['Tahsil edilen', currency(collected), `${state.year} yılı toplamı`, '₺'],
+          ['Beklenen bakiye', currency(outstanding), 'Ödenmemiş aidatlar', '◷']
+        ];
+        $('#summary-grid').innerHTML = cards.map(([label, value, note, icon]) => `<article class="summary"><div class="summary-top"><span>${label}</span><span class="summary-icon">${icon}</span></div><div class="summary-value">${value}</div><div class="summary-note">${note}</div></article>`).join('');
+      }
+      function renderDues() {
+        const blockSelect = $('#block-filter');
+        const priorFilter = state.blockFilter;
+        blockSelect.innerHTML = `<option value="all">Tüm bloklar</option>${data.blocks.map(block => `<option value="${escapeHtml(block.id)}">${escapeHtml(block.name)}</option>`).join('')}`;
+        blockSelect.value = data.blocks.some(block => block.id === priorFilter) ? priorFilter : 'all';
+        state.blockFilter = blockSelect.value;
+        const query = state.search.trim().toLocaleLowerCase('tr-TR');
+        const apartments = data.apartments.filter(apartment => (state.blockFilter === 'all' || apartment.blockId === state.blockFilter) && `${blockName(apartment.blockId)} ${apartment.number} ${apartment.resident}`.toLocaleLowerCase('tr-TR').includes(query)).sort((a, b) => blockName(a.blockId).localeCompare(blockName(b.blockId), 'tr') || Number(a.number) - Number(b.number));
+        renderSummary(apartments);
+        $('#dues-subtitle').textContent = `${state.year} yılı · Aylık ödeme durumlarını görüntüleyin ve güncelleyin.`;
+        $('#dues-foot-count').textContent = `${apartments.length} daire listeleniyor`;
+        const table = $('#dues-table');
+        if (!apartments.length) {
+          table.innerHTML = `<div class="empty"><strong>Henüz daire kaydı yok</strong>Filtreyi değiştirebilir veya yeni daire ekleyebilirsiniz.</div>`;
+          return;
+        }
+        table.innerHTML = `<table><thead><tr><th>Daire / sakin</th><th>Aylık aidat</th>${MONTHS.map(month => `<th class="month-cell">${month}</th>`).join('')}<th>Durum</th></tr></thead><tbody>${apartments.map(apartment => {
+          const count = MONTHS.reduce((sum, _, month) => sum + Number(isPaid(apartment.id, month)), 0);
+          return `<tr><td><div class="unit-name">${escapeHtml(blockName(apartment.blockId))} · Daire ${escapeHtml(apartment.number)}</div><div class="unit-meta">${escapeHtml(apartment.resident || 'Sakin bilgisi girilmemiş')}</div></td><td class="amount">${currency(apartment.dues)}</td>${MONTHS.map((_, month) => `<td class="month-cell"><button class="month-toggle ${isPaid(apartment.id, month) ? 'paid' : ''}" data-payment="${escapeHtml(apartment.id)}" data-month="${month}" aria-label="${escapeHtml(blockName(apartment.blockId))} daire ${escapeHtml(apartment.number)}, ${MONTHS[month]}: ${isPaid(apartment.id, month) ? 'ödendi' : 'ödenmedi'}">${isPaid(apartment.id, month) ? '✓' : '·'}</button></td>`).join('')}<td><span class="status ${count === 12 ? 'complete' : ''}">${count === 12 ? 'Tamamlandı' : `${count}/12 ödendi`}</span></td></tr>`;
+        }).join('')}</tbody></table>`;
+      }
+      function renderBlocks() {
+        const table = $('#blocks-table');
+        if (!data.blocks.length) { table.innerHTML = `<div class="empty"><strong>Henüz blok eklenmedi</strong>Başlamak için yeni bir blok oluşturun.</div>`; return; }
+        table.innerHTML = `<table><thead><tr><th>Blok</th><th>Daire sayısı</th><th></th></tr></thead><tbody>${data.blocks.map(block => {
+          const count = data.apartments.filter(apartment => apartment.blockId === block.id).length;
+          return `<tr><td><div class="record-name">${escapeHtml(block.name)}</div></td><td>${count}</td><td><div class="row-actions"><button class="icon-button" data-edit-block="${escapeHtml(block.id)}" aria-label="${escapeHtml(block.name)} düzenle" title="Düzenle">✎</button><button class="icon-button delete" data-delete-block="${escapeHtml(block.id)}" aria-label="${escapeHtml(block.name)} sil" title="Sil">×</button></div></td></tr>`;
+        }).join('')}</tbody></table>`;
+      }
+      function renderApartments() {
+        const query = $('#apartment-search').value.trim().toLocaleLowerCase('tr-TR');
+        const apartments = data.apartments.filter(apartment => `${blockName(apartment.blockId)} ${apartment.number} ${apartment.resident}`.toLocaleLowerCase('tr-TR').includes(query)).sort((a, b) => blockName(a.blockId).localeCompare(blockName(b.blockId), 'tr') || Number(a.number) - Number(b.number));
+        const table = $('#apartments-table');
+        if (!apartments.length) { table.innerHTML = `<div class="empty"><strong>Daire bulunamadı</strong>Aramanızı değiştirebilir veya yeni daire ekleyebilirsiniz.</div>`; return; }
+        table.innerHTML = `<table><thead><tr><th>Daire</th><th>Sakin</th><th>Aylık aidat</th><th></th></tr></thead><tbody>${apartments.map(apartment => `<tr><td><div class="record-name">${escapeHtml(blockName(apartment.blockId))} · Daire ${escapeHtml(apartment.number)}</div></td><td>${escapeHtml(apartment.resident || '—')}</td><td class="amount">${currency(apartment.dues)}</td><td><div class="row-actions"><button class="icon-button" data-edit-apartment="${escapeHtml(apartment.id)}" aria-label="Daire ${escapeHtml(apartment.number)} düzenle" title="Düzenle">✎</button><button class="icon-button delete" data-delete-apartment="${escapeHtml(apartment.id)}" aria-label="Daire ${escapeHtml(apartment.number)} sil" title="Sil">×</button></div></td></tr>`).join('')}</tbody></table>`;
+      }
+      function render() {
+        renderYears();
+        renderDues();
+        renderBlocks();
+        renderApartments();
+        $('#page-title').textContent = ({ dues: 'Aidat takibi', blocks: 'Blok yönetimi', apartments: 'Daire yönetimi' })[state.view];
+      }
+      function openDialog({ title, subtitle, fields, submitLabel = 'Kaydet', onSubmit }) {
+        const dialog = $('#record-dialog');
+        $('#dialog-title').textContent = title;
+        $('#dialog-subtitle').textContent = subtitle;
+        const form = $('#record-form');
+        $('#dialog-fields').innerHTML = `${fields}<div class="modal-actions"><button class="button button-quiet" type="button" data-cancel>Vazgeç</button><button class="button button-primary" type="submit">${submitLabel}</button></div>`;
+        dialog.showModal();
+        const firstInput = dialog.querySelector('input, select');
+        if (firstInput) firstInput.focus();
+        form.onsubmit = event => {
+          event.preventDefault();
+          const values = Object.fromEntries(new FormData(form).entries());
+          if (onSubmit(values)) dialog.close();
+        };
+      }
+      function blockForm(block) {
+        openDialog({ title: block ? 'Bloğu düzenle' : 'Yeni blok', subtitle: 'Blok adını girin.', fields: `<div class="form-row"><label for="block-name">Blok adı</label><input id="block-name" name="name" required maxlength="40" placeholder="Örn. A Blok" value="${escapeHtml(block?.name || '')}"></div>`, onSubmit: values => {
+          const name = values.name.trim();
+          if (data.blocks.some(item => item.name.toLocaleLowerCase('tr-TR') === name.toLocaleLowerCase('tr-TR') && item.id !== block?.id)) { showToast('Bu blok adı zaten kullanılıyor.'); return false; }
+          if (block) block.name = name; else data.blocks.push({ id: id('block'), name });
+          save(); showToast(block ? 'Blok güncellendi.' : 'Blok eklendi.'); return true;
+        } });
+      }
+      function apartmentForm(apartment) {
+        if (!data.blocks.length) { showToast('Önce en az bir blok ekleyin.'); state.view = 'blocks'; activateView('blocks'); return; }
+        const blockOptions = data.blocks.map(block => `<option value="${escapeHtml(block.id)}" ${block.id === apartment?.blockId ? 'selected' : ''}>${escapeHtml(block.name)}</option>`).join('');
+        openDialog({ title: apartment ? 'Daireyi düzenle' : 'Yeni daire', subtitle: 'Daire ve aidat bilgilerini girin.', fields: `<div class="form-row"><label for="apartment-block">Blok</label><select id="apartment-block" name="blockId" required>${blockOptions}</select></div><div class="form-row"><label for="apartment-number">Daire numarası</label><input id="apartment-number" name="number" required maxlength="12" placeholder="Örn. 12" value="${escapeHtml(apartment?.number || '')}"></div><div class="form-row"><label for="resident-name">Sakin adı</label><input id="resident-name" name="resident" maxlength="80" placeholder="Ad soyad" value="${escapeHtml(apartment?.resident || '')}"></div><div class="form-row"><label for="dues-amount">Aylık aidat (₺)</label><input id="dues-amount" name="dues" type="number" min="0" step="50" required value="${escapeHtml(apartment?.dues ?? 1250)}"></div>`, onSubmit: values => {
+          const number = values.number.trim();
+          const duplicate = data.apartments.some(item => item.blockId === values.blockId && item.number.toLocaleLowerCase('tr-TR') === number.toLocaleLowerCase('tr-TR') && item.id !== apartment?.id);
+          if (duplicate) { showToast('Bu blokta aynı daire numarası var.'); return false; }
+          const record = { id: apartment?.id || id('apt'), blockId: values.blockId, number, resident: values.resident.trim(), dues: Number(values.dues) };
+          if (apartment) Object.assign(apartment, record); else data.apartments.push(record);
+          save(); showToast(apartment ? 'Daire güncellendi.' : 'Daire eklendi.'); return true;
+        } });
+      }
+      function activateView(view) {
+        state.view = view;
+        document.querySelectorAll('.nav button').forEach(button => button.classList.toggle('active', button.dataset.view === view));
+        document.querySelectorAll('.view').forEach(section => section.classList.toggle('active', section.id === `view-${view}`));
+        $('#page-title').textContent = ({ dues: 'Aidat takibi', blocks: 'Blok yönetimi', apartments: 'Daire yönetimi' })[view];
+      }
+      document.querySelectorAll('.nav button').forEach(button => button.addEventListener('click', () => activateView(button.dataset.view)));
+      $('#year-select').addEventListener('change', event => { state.year = Number(event.target.value); render(); });
+      $('#add-year').addEventListener('click', () => openDialog({ title: 'Yeni yıl ekle', subtitle: 'Yeni yıl için aidat takibini başlatın.', fields: `<div class="form-row"><label for="new-year">Yıl</label><input id="new-year" name="year" type="number" min="2000" max="2100" required value="${currentYear + 1}"></div>`, onSubmit: values => {
+        const year = Number(values.year);
+        if (data.years.includes(year)) { showToast('Bu yıl zaten kayıtlı.'); return false; }
+        data.years.push(year); state.year = year; save(); showToast(`${year} yılı eklendi.`); return true;
+      } }));
+      $('#new-block').addEventListener('click', () => blockForm());
+      $('#new-apartment').addEventListener('click', () => apartmentForm());
+      $('#new-apartment-from-dues').addEventListener('click', () => apartmentForm());
+      $('#unit-search').addEventListener('input', event => { state.search = event.target.value; renderDues(); });
+      $('#block-filter').addEventListener('change', event => { state.blockFilter = event.target.value; renderDues(); });
+      $('#apartment-search').addEventListener('input', renderApartments);
+      $('#dues-table').addEventListener('click', event => {
+        const button = event.target.closest('[data-payment]');
+        if (!button) return;
+        const key = paymentKey(button.dataset.payment, state.year, Number(button.dataset.month));
+        if (data.payments[key]) delete data.payments[key]; else data.payments[key] = { paidAt: new Date().toISOString() };
+        save();
+      });
+      $('#blocks-table').addEventListener('click', event => {
+        const edit = event.target.closest('[data-edit-block]');
+        const remove = event.target.closest('[data-delete-block]');
+        if (edit) blockForm(data.blocks.find(block => block.id === edit.dataset.editBlock));
+        if (remove) {
+          const block = data.blocks.find(item => item.id === remove.dataset.deleteBlock);
+          if (data.apartments.some(apartment => apartment.blockId === block.id)) { showToast('Bu blokta daireler var. Önce daireleri silin veya taşıyın.'); return; }
+          if (confirm(`${block.name} silinsin mi?`)) { data.blocks = data.blocks.filter(item => item.id !== block.id); save(); showToast('Blok silindi.'); }
+        }
+      });
+      $('#apartments-table').addEventListener('click', event => {
+        const edit = event.target.closest('[data-edit-apartment]');
+        const remove = event.target.closest('[data-delete-apartment]');
+        if (edit) apartmentForm(data.apartments.find(apartment => apartment.id === edit.dataset.editApartment));
+        if (remove) {
+          const apartment = data.apartments.find(item => item.id === remove.dataset.deleteApartment);
+          if (confirm(`${blockName(apartment.blockId)} daire ${apartment.number} silinsin mi? Aidat geçmişi de silinir.`)) {
+            data.apartments = data.apartments.filter(item => item.id !== apartment.id);
+            Object.keys(data.payments).filter(key => key.startsWith(`${apartment.id}:`)).forEach(key => delete data.payments[key]);
+            save(); showToast('Daire silindi.');
+          }
+        }
+      });
+      $('#record-dialog').addEventListener('click', event => {
+        if (event.target.closest('.modal-close') || event.target.closest('[data-cancel]')) $('#record-dialog').close();
+      });
+      render();
+    })();
+  </script>
+</body>
+</html>
